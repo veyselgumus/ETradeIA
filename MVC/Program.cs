@@ -1,6 +1,18 @@
+using Business.DataAccess.Contexts;
+using Business.DataAccess.Services;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+#region IoC (Inversion of Control) Container:Bagýmlýlýklarýn yönetilmesi
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<Db>(options => options.UseSqlServer(connectionString));
+
+builder.Services.AddScoped<ProductServiceBase, ProductService>();
+builder.Services.AddScoped<CategoryServiceBase,CategoryService>();
+#endregion
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();

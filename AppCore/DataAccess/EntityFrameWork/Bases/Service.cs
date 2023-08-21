@@ -12,7 +12,10 @@ namespace AppCore.DataAccess.EntityFrameWork.Bases
 
     public abstract class Service<TEntity> : IService<TEntity> where TEntity : Record, new()
     {
-        const string _errorMessage = "Changes not saved!";
+        const string ERRORMESSAGE = "Changes not saved!";
+        const string ADDEDMESSAGE = "Added successfully.";
+        const string UPDATEDMESSAGE = "UPDATED successfully.";
+        const string DELETEDMESSAGE = "DELETED successfully.";
         protected readonly DbContext _db;
 
         protected Service(DbContext db)
@@ -26,16 +29,24 @@ namespace AppCore.DataAccess.EntityFrameWork.Bases
             if(save) 
             {
                 Save();
-                return new SuccessResult("Added successfully.");
+                return new SuccessResult(ADDEDMESSAGE);
             }
-            return new ErrorResult(_errorMessage);
+            return new ErrorResult(ERRORMESSAGE);
             
         }
 
         
-        public Result Delete(Expression<Func<TEntity, bool>> preticate, bool save = true)
+        public virtual Result Delete(Expression<Func<TEntity, bool>> preticate, bool save = true)
         {
-            throw new NotImplementedException();
+            var entities=_db.Set<TEntity>().
+                Where(preticate).ToList();
+            _db.Set<TEntity>().RemoveRange(entities);
+            if(save)
+            {
+                Save();
+                return new SuccessResult(DELETEDMESSAGE);
+            }
+            return new ErrorResult(ERRORMESSAGE);
         }
 
         public void Dispose()
@@ -84,9 +95,15 @@ namespace AppCore.DataAccess.EntityFrameWork.Bases
             }
         }
 
-        public Result Update(TEntity entity, bool save = true)
+        public virtual Result Update(TEntity entity, bool save = true)
         {
-            throw new NotImplementedException();
+            _db.Set<TEntity>().Update(entity);
+            if (save)
+            {
+                Save();
+                return new SuccessResult(UPDATEDMESSAGE);
+            }
+            return new ErrorResult(ERRORMESSAGE);
         }
     }
 }
